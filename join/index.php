@@ -16,8 +16,6 @@
     $password = '';
    }
 
-
-
   // POST送信された時
   // $_POSTという変数が存在している、かつ、$_POSTという変数の中身が空っぽではないとき　
   // empty...中身が空か判定。0,"",null,falseというものを全て空っぽと判定する
@@ -46,6 +44,15 @@
     // $errorという変数が存在していなかった場合、入力が正常と認識
     if(!isset($error)){
 
+    // 画像の拡張子チェック
+    // jpg,png,gifはOK
+    // substr...文字列から範囲指定して一部分の文字を切り出す関数
+    // substr(文字列、切り出す文字のスタートの数) マイナスの場合は、末尾からn文字目
+    // 例) 1.pngがファイル名の場合、$extにはpngが代入される
+
+    $ext = substr($_FILES['picture_path']['name'],-3);
+
+    if (($ext == 'png') || ($ext == 'jpg') || ($ext == 'gif')) { 
     // 画像のアップロード処理
     // 例) abc1.pngを指定したとき、$_picture_nameの中身は20171222142530abc1.pngというような文字列が代入される 
     $picture_name = date('ymdHis') . $_FILES['picture_path']['name'];
@@ -60,13 +67,16 @@
       $_SESSION['join'] = $_POST;
       $_SESSION['join']['picture_path'] = $picture_name;
     // check.phpに移動
-    header('Location: check.php');
+     header('Location: check.php');
 
     // これ以下のコードを無駄に処理しないように、このページの処理を終了させる
     exit();
+
+    } else {
+      $error["image"] = 'type';
     }
-
-
+   
+    }
   }
 ?>
 
@@ -155,6 +165,9 @@
           <div class="form-group">
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
+              <?php if ((isset($error["image"])) && ($error["image"] == 'type')) { ?>
+              <p class="error">* 画像ファイルを選択してください。</p>
+              <?php } ?>
               <input type="file" name="picture_path" class="form-control">
             </div>
           </div>
