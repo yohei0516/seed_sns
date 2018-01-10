@@ -1,6 +1,9 @@
 <?php
   session_start();
 
+  // DBに接続
+  require('dbconnect.php');
+
   // ログインチェック
   if (isset($_SESSION['id'])){
     // ログインしている
@@ -11,6 +14,21 @@
     header("Location: login.php");
     exit;
   }
+
+  // --------------------- 表示用のデータ取得 ---------------------
+    try {
+    // ログインしている人の情報を取得
+      $sql = "SELECT * FROM `members` WHERE `member_id`=".$_SESSION["id"];
+      
+      // SQL文実行
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute();
+
+      $login_member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    } catch (Exception $e) {
+      
+    }
 ?>
 
 <!DOCTYPE html>
@@ -57,7 +75,7 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4 content-margin-top">
-        <legend>ようこそ●●さん！</legend>
+        <legend>ようこそ<?php echo $login_member["nick_name"]; ?>さん！</legend>
         <form method="post" action="" class="form-horizontal" role="form">
             <!-- つぶやき -->
             <div class="form-group">
