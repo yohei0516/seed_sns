@@ -1,6 +1,9 @@
 <?php 
   session_start(); //SESSIONを使うときは絶対必要
 
+  // DBに接続
+  require('../dbconnect.php');
+
   // 書き直し処理 (check.phpで書き直し、というボタンが押されたとき)
   if (isset($_GET['action']) && $_GET['action'] == 'rewrite') {
 
@@ -44,6 +47,32 @@
     // $errorという変数が存在していなかった場合、入力が正常と認識
     if(!isset($error)){
 
+    // emailの重複チェック
+    // DBに同じemailの登録があるか確認
+    try {
+      // 検索条件にヒットした件数を取得するSQL文
+      // COUNT() SQL文の関数。ヒットした数を取得
+      // as 別名 取得したデータに別の名前をつけて扱いやすようにする
+      $sql = "SELECT COUNT(*) as `cnt` FROM `members` WHERE `email`=?";
+
+      // SQL文実行
+      $data = array($_POST["email"]);
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($data);
+
+      // 件数取得
+      $count = $stmt->fetch(PDO::FETCH_ASSOC);
+
+      if ($count['cnt'] > 0){
+        // 重複エラー
+        $error['email'] = "duplicate";
+      }
+
+    } catch (Exception $e) {
+      
+    }
+
+    if (!isset($error)){
     // 画像の拡張子チェック
     // jpg,png,gifはOK
     // substr...文字列から範囲指定して一部分の文字を切り出す関数
@@ -77,7 +106,10 @@
     }
    
     }
+
   }
+
+}
 ?>
 
 <!DOCTYPE html>
@@ -144,7 +176,11 @@
             <div class="col-sm-8">
               <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com" value="<?php echo $email; ?>">
               <?php if ((isset($error["email"])) && ($error["email"] == 'blank')) { ?>
-              <p class="error">* メールアドレスを入力してください。</p>
+              <p class="error">* Emailを入力してください。</p>
+              <?php } ?>
+
+              <?php if ((isset($error["email"])) && ($error["email"] == 'duplicate')) { ?>
+              <p class="error">* 入力されたEmailは登録済みです。</p>
               <?php } ?>
             </div>
           </div>
@@ -165,10 +201,10 @@
           <div class="form-group">
             <label class="col-sm-4 control-label">プロフィール写真</label>
             <div class="col-sm-8">
+              <input type="file" name="picture_path" class="form-control">
               <?php if ((isset($error["image"])) && ($error["image"] == 'type')) { ?>
               <p class="error">* 画像ファイルを選択してください。</p>
               <?php } ?>
-              <input type="file" name="picture_path" class="form-control">
             </div>
           </div>
 
