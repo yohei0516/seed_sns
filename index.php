@@ -15,6 +15,26 @@
     exit;
   }
 
+  // ---------- POST送信されたら、つぶやきをINSERTで保存　-----------
+
+  if(isset($_POST) && !empty($_POST)){
+
+      $tweet = $_POST['tweet'];
+      $member_id = $_SESSION['id'];
+
+    try {
+        $sql = 'INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`,`created`, `modified`) VALUES (?,?,-1,now(),now())';
+
+        $data = array($tweet,$member_id);
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($data);
+
+        header('Location: index.php');
+        exit();
+  
+    } catch (Exception $e) {
+      }
+  }
   // --------------------- 表示用のデータ取得 ---------------------
     try {
     // ログインしている人の情報を取得
@@ -59,7 +79,7 @@
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
