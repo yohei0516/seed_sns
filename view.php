@@ -6,31 +6,17 @@
     // データベースに接続（外部ファイルから処理の読み込み）
     require('dbconnect.php');
 
-    $sql ='SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path` 
-           FROM `tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE tweet_id=?';
+    // SQL文の作成
+    $sql ="SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path` 
+           FROM `tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=".$_GET["tweet_id"];
 
     $data = array($_GET['tweet_id']);
     // SQL文実行
     $stmt = $dbh->prepare($sql);
-    $stmt->execute($data);
-    // データ取得
-    while ($record = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $stmt->execute();
 
-      $tweets[] = array(
-          "tweet"=>$record["tweet"],
-          "nick_name"=>$record["nick_name"],
-          "picture_path"=>$record["picture_path"],
-          "modified"=>$record["modified"],
-          "tweet_id"=>$record["tweet_id"],
-        );
-    }
-
-
-  // 宿題：個別ページの表示を完成させる
-
-  // ヒント：$_GET["tweet_id"]の中に、表示したいつぶやきのtweet_idが格納されている
-  // ヒント2：送信されているtweet_idを使用して、SQL文でDBからデータを1件取得
-  // ヒント3：取得できたデータを、一覧の１行分の表示を参考に、表示してみる
+    // 個別ページに表示するデータを取得
+    $one_tweet = $stmt->fetch(PDO::FETCH_ASSOC)
 ?>
 
 
@@ -79,31 +65,25 @@
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
 
-       <?php foreach ($tweets as $value) {  ?> 
-
         <div class="msg">
-          <img src="picture_path/<?php echo $value["picture_path"]; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"> <?php echo $value["nick_name"]; ?> </span></p>
+          <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="100" height="100">
+          <p>投稿者 : <span class="name"> <?php echo $one_tweet["nick_name"]; ?> </span></p>
           <p>
             つぶやき : <br>
-            <?php echo $value["tweet"]; ?>
+            <?php echo $one_tweet["tweet"]; ?>
           </p>
           <p class="day">
             <?php 
-              $modify_date = $value["modified"]; 
+              $modify_date = $one_tweet["modified"]; 
              // strtotime 文字型のデータを日時型に変換できる
               $modify_date = date("Y-m-d H:i",strtotime($modify_date));
               echo $modify_date; 
             ?>
-
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
 
-      <?php
-        }
-      ?> 
 
       </div>
     </div>
