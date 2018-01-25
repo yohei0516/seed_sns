@@ -9,9 +9,39 @@
   // session_start();
     // デバック処理(前の画面から送られてきたIDが何か判別)
     // var_dump($_GET['tweet_id']);
-    // データベースに接続（外部ファイルから処理の読み込み）
+    // DBに接続（外部ファイルから処理の読み込み）
     require('dbconnect.php');
 
+    // ---------- POST送信されたら、つぶやきをINSERTで保存　-----------
+  // $_POST["tweet"] => "" $_POSTが空だと思われない
+  // $_POST["tweet"] => "" $_POST["tweet"]が空だと認識される
+  if(isset($_POST) && !empty($_POST["tweet"])){
+
+    // 入力チェック
+    if ($_POST["tweet"] == ""){
+      $error["tweet"] = "blank";
+    }
+
+    if (!isset($error)){
+    // SQL文作成
+    // tweet=つぶやいた内容
+    // member_id=ログインした人のid
+    // reply_tweet_id=返信元のtweet_id
+    // created=現在日時（now()を使用）
+    // modified=現在日時（now()を使用）
+
+        $sql = 'INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`,`created`, `modified`) VALUES (?,?,?,now(),now())';
+
+    // SQL文実行
+        $data = array($_POST["tweet"],$_SESSION["id"],$_GET["tweet_id"]);
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($data);
+
+        // 一覧へ移動する（データの再送信防止）
+        header('Location: index.php');
+    }
+  }
+  
     // SQL文の作成
     $sql ="SELECT `tweets`.*,`members`.`nick_name`,`members`.`picture_path` 
            FROM `tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=".$_GET["tweet_id"];
@@ -23,6 +53,9 @@
 
     // 個別ページに表示するデータを取得
     $one_tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+    $reply_msg = "@".$one_tweet["tweet"]."(".$one_tweet["nick_name"].")";
 ?>
 
 
@@ -69,28 +102,21 @@
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4 content-margin-top">
-
-        <div class="msg">
-          <img src="picture_path/<?php echo $one_tweet["picture_path"]; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"> <?php echo $one_tweet["nick_name"]; ?> </span></p>
-          <p>
-            つぶやき : <br>
-            <?php echo $one_tweet["tweet"]; ?>
-          </p>
-          <p class="day">
-            <?php 
-              $modify_date = $one_tweet["modified"]; 
-             // strtotime 文字型のデータを日時型に変換できる
-              $modify_date = date("Y-m-d H:i",strtotime($modify_date));
-              echo $modify_date; 
-            ?>
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
-        </div>
+      <div class="col-md-6 col-md-offset-3 content-margin-top">
+        <h4>つぶやきに返信しましょう</h4>
+          <div class="msg">
+            <form method="post" action="" class="form-horizontal" role="form">
+                <!-- つぶやき -->
+              <div class="form-group">
+                <label class="col-sm-4 control-label">つぶやきに返信</label>
+                  <div class="col-sm-8">
+                    <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"><?php echo $reply_msg; ?></textarea>
+                  </div>
+              </div>
+                <ul class="paging"><input type="submit" class="btn btn-info" value="返信としてつぶやく"></ul>
+            </form>
+          </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
-
-
       </div>
     </div>
   </div>

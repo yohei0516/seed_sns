@@ -97,7 +97,7 @@ require('dbconnect.php');
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="join/index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
